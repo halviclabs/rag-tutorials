@@ -1,0 +1,23 @@
+# Provider profile "ollama" — local Mistral via the dockerized Ollama.
+# Fully offline, no API key. Pull the models once:
+#   docker compose exec ollama ollama pull mistral
+#   docker compose exec ollama ollama pull nomic-embed-text
+spring:
+  ai:
+    model:
+      chat: ollama
+      embedding: ollama
+    ollama:
+      base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
+      chat:
+        options:
+          model: ${OLLAMA_CHAT_MODEL:mistral}
+          temperature: 0.2
+      embedding:
+        options:
+          model: ${OLLAMA_EMBEDDING_MODEL:nomic-embed-text}
+
+rag:
+  vector-store:
+    # nomic-embed-text produces 768-dimensional embeddings
+    dimensions: 768

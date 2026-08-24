@@ -1,0 +1,90 @@
+{{- if .Values.ollama.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "rag-tutorial.fullname" . }}-ollama
+  labels:
+    {{- include "rag-tutorial.labels" . | nindent 4 }}
+spec:
+  accessModes: ["ReadWriteOnce"]
+  {{- if .Values.ollama.storageClassName }}
+  storageClassName: {{ .Values.ollama.storageClassName }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.ollama.storage }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "rag-tutorial.fullname" . }}-ollama
+  labels:
+    {{- include "rag-tutorial.labels" . | nindent 4 }}
+    app.kubernetes.io/component: ollama
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: ollama
+  template:
+    metadata:
+      labels:
+        {{- include "rag-tutorial.labels" . | nindent 8 }}
+        app.kubernetes.io/component: ollama
+    spec:
+      containers:
+        - name: ollama
+          image: {{ .Values.ollama.image }}
+          ports:
+            - name: http
+              containerPort: 11434
+          volumeMounts:
+            - name: models
+              mountPath: /root/.ollama
+          {{- with .Values.ollama.models }}
+          lifecycle:
+            postStart:
+              exec:
+                # pull the configured models once the server is up
+                command:
+                  - /bin/sh
+                  - -c
+                  - |
+                    for i in $(seq 1 30); do ollama list >/dev/null 2>&1 && break; sleep 2; done
+                    {{- range . }}
+                    ollama pull {{ . }} || true
+                    {{- end }}
+          {{- end }}
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          resources:
+            {{- toYaml .Values.ollama.resources | nindent 12 }}
+      volumes:
+        - name: models
+          persistentVolumeClaim:
+            claimName: {{ include "rag-tutorial.fullname" . }}-ollama
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "rag-tutorial.fullname" . }}-ollama
+  labels:
+    {{- include "rag-tutorial.labels" . | nindent 4 }}
+    app.kubernetes.io/component: ollama
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: ollama
+  ports:
+    - name: http
+      port: 11434
+      targetPort: http
+{{- end }}

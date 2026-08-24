@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "rag-tutorial.fullname" . }}-frontend
+  labels:
+    {{- include "rag-tutorial.labels" . | nindent 4 }}
+    app.kubernetes.io/component: frontend
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: frontend
+  ports:
+    - name: http
+      port: {{ .Values.frontend.service.port }}
+      targetPort: http

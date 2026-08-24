@@ -1,0 +1,37 @@
+server {
+    listen 80;
+    server_name _;
+
+    root /usr/share/nginx/html;
+    index index.html;
+
+    # Angular SPA
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # Dashboard API (chat, ingest, documents) → backend
+    location /api/ {
+        proxy_pass ${BACKEND_URL};
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_read_timeout 120s;
+    }
+
+    # Chat-platform webhooks → backend (so one public host serves everything)
+    location /teams/ {
+        proxy_pass ${BACKEND_URL};
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_read_timeout 120s;
+    }
+
+    location /slack/ {
+        proxy_pass ${BACKEND_URL};
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_read_timeout 120s;
+    }
+
+    client_max_body_size 25m;
+}

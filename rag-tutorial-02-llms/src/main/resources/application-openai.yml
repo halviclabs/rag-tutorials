@@ -1,0 +1,15 @@
+# Provider profile "openai" — the plain OpenAI API (just an API key, no Azure resource)
+spring:
+  ai:
+    model:
+      chat: openai
+      embedding: openai
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      chat:
+        options:
+          model: ${OPENAI_CHAT_MODEL:gpt-4o-mini}
+          temperature: 0.2
+      embedding:
+        options:
+          model: ${OPENAI_EMBEDDING_MODEL:text-embedding-3-small}

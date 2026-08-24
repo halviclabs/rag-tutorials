@@ -1,0 +1,87 @@
+# Default values for the rag-tutorial chart.
+
+backend:
+  image:
+    repository: your-registry/rag-backend
+    tag: latest
+    pullPolicy: IfNotPresent
+  replicas: 1
+
+  # Same Spring profile combinations as running locally:
+  #   store:    simple | pgvector      (pgvector needs postgres.enabled=true or an external DB)
+  #   provider: azure | openai | ollama (ollama needs ollama.enabled=true or an external Ollama)
+  springProfiles: "simple,azure"
+
+  # Non-secret environment variables → ConfigMap. Empty values are skipped.
+  config:
+    AZURE_OPENAI_ENDPOINT: ""
+    AZURE_OPENAI_CHAT_DEPLOYMENT: ""
+    AZURE_OPENAI_EMBEDDING_DEPLOYMENT: ""
+    OPENAI_CHAT_MODEL: ""
+    OPENAI_EMBEDDING_MODEL: ""
+    # Optional connectors (Part 3): setting the key property activates them
+    RAG_CONFLUENCE_BASE_URL: ""
+    RAG_CONFLUENCE_EMAIL: ""
+
+  # Secret environment variables (API keys, webhook secrets) → Secret.
+  # Empty values are skipped. Set them at install time, e.g.
+  #   --set backend.secrets.OPENAI_API_KEY=$OPENAI_API_KEY
+  # — never commit real values to this file.
+  secrets:
+    AZURE_OPENAI_API_KEY: ""
+    OPENAI_API_KEY: ""
+    RAG_CONFLUENCE_API_TOKEN: ""
+    RAG_CONFLUENCE_PERSONAL_ACCESS_TOKEN: ""
+    RAG_TEAMS_HMAC_SECRET: ""
+    RAG_SLACK_SIGNING_SECRET: ""
+    RAG_SLACK_BOT_TOKEN: ""
+
+  resources: {}
+    # requests: { cpu: 250m, memory: 512Mi }
+    # limits:   { cpu: "1",  memory: 1Gi }
+
+frontend:
+  image:
+    repository: your-registry/rag-frontend
+    tag: latest
+    pullPolicy: IfNotPresent
+  replicas: 1
+  service:
+    port: 80
+
+# Optional, disabled by default: expose the frontend via Ingress
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  host: rag.example.com
+  tls: []
+    # - secretName: rag-tls
+    #   hosts: [rag.example.com]
+
+# Optional in-cluster PostgreSQL with the pgvector extension.
+# When enabled, the backend automatically gets POSTGRES_URL/USER/PASSWORD
+# pointing at it (used by the "pgvector" Spring profile).
+postgres:
+  enabled: false
+  image: pgvector/pgvector:pg16
+  database: ragdb
+  username: rag
+  password: rag          # demo default — override for anything real
+  storage: 5Gi
+  storageClassName: ""
+
+# Optional in-cluster Ollama for the "ollama" provider profile.
+# When enabled, the backend automatically gets OLLAMA_BASE_URL pointing at it,
+# and the listed models are pulled after container start.
+ollama:
+  enabled: false
+  image: ollama/ollama:latest
+  models:
+    - mistral
+    - nomic-embed-text
+  storage: 20Gi
+  storageClassName: ""
+  resources: {}
+    # Ollama benefits massively from more CPU/memory (or a GPU node):
+    # requests: { cpu: "2", memory: 8Gi }

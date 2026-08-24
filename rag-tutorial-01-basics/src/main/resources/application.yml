@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: rag-tutorial-01-basics
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
+  ai:
+    azure:
+      openai:
+        api-key: ${AZURE_OPENAI_API_KEY}
+        endpoint: ${AZURE_OPENAI_ENDPOINT}
+        chat:
+          options:
+            deployment-name: ${AZURE_OPENAI_CHAT_DEPLOYMENT:gpt-4o}
+            temperature: 0.2
+        embedding:
+          options:
+            deployment-name: ${AZURE_OPENAI_EMBEDDING_DEPLOYMENT:text-embedding-3-small}
+
+rag:
+  retrieval:
+    # how many chunks the similarity search returns for each question
+    top-k: 4
+
+server:
+  port: 8080

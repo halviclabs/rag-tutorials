@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: rag-tutorial-02-llms
+  # If no profiles are given, behave like Part 1: in-memory store + Azure OpenAI.
+  # Activate any combination of one store profile (simple | pgvector) and one
+  # provider profile (azure | openai | ollama), e.g. -Dspring.profiles.active=pgvector,ollama
+  profiles:
+    default: simple,azure
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
+  ai:
+    # Disable every model autoconfiguration by default; the active provider
+    # profile switches exactly one chat and one embedding model back on.
+    model:
+      chat: none
+      embedding: none
+      image: none
+      moderation: none
+      audio:
+        transcription: none
+        speech: none
+
+rag:
+  retrieval:
+    # how many chunks the similarity search returns for each question
+    top-k: 4
+  vector-store:
+    # Embedding dimensionality — must match the active provider's embedding model.
+    # 1536 = OpenAI/Azure text-embedding-3-small; the ollama profile overrides
+    # this with 768 for nomic-embed-text. pgvector needs it for its table schema.
+    dimensions: 1536
+
+server:
+  port: 8080

@@ -1,0 +1,7 @@
+# Store profile "simple" — the in-memory SimpleVectorStore from Part 1.
+# No database is needed, so the JDBC autoconfiguration (pulled in for the
+# pgvector profile) must be switched off.
+spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration

@@ -1,0 +1,57 @@
+spring:
+  application:
+    name: rag-tutorial-04-full
+  # If no profiles are given, behave like Part 1: in-memory store + Azure OpenAI.
+  # Activate any combination of one store profile (simple | pgvector) and one
+  # provider profile (azure | openai | ollama), e.g. -Dspring.profiles.active=pgvector,ollama
+  profiles:
+    default: simple,azure
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
+  ai:
+    # Disable every model autoconfiguration by default; the active provider
+    # profile switches exactly one chat and one embedding model back on.
+    model:
+      chat: none
+      embedding: none
+      image: none
+      moderation: none
+      audio:
+        transcription: none
+        speech: none
+
+rag:
+  retrieval:
+    # how many chunks the similarity search returns for each question
+    top-k: 4
+
+  # ── Optional connectors ──────────────────────────────────────────────────
+  # All three are OFF by default. Each activates only once its key property is
+  # set (feature flags via @ConditionalOnProperty). Secrets always come from
+  # environment variables — never commit them.
+  #
+  # Confluence ingestion — activates once base-url is set:
+  # confluence:
+  #   base-url: ${CONFLUENCE_BASE_URL}            # e.g. https://your-org.atlassian.net/wiki
+  #   email: ${CONFLUENCE_EMAIL}                  # Cloud auth (email + API token) ...
+  #   api-token: ${CONFLUENCE_API_TOKEN}
+  #   personal-access-token: ${CONFLUENCE_PAT}    # ... or Server/DC auth (PAT) instead
+  #
+  # Microsoft Teams outgoing webhook — activates once hmac-secret is set:
+  # teams:
+  #   hmac-secret: ${TEAMS_HMAC_SECRET}           # the webhook's Base64 security token
+  #
+  # Slack Events API bot — activates once signing-secret is set:
+  # slack:
+  #   signing-secret: ${SLACK_SIGNING_SECRET}
+  #   bot-token: ${SLACK_BOT_TOKEN}               # xoxb-...
+  vector-store:
+    # Embedding dimensionality — must match the active provider's embedding model.
+    # 1536 = OpenAI/Azure text-embedding-3-small; the ollama profile overrides
+    # this with 768 for nomic-embed-text. pgvector needs it for its table schema.
+    dimensions: 1536
+
+server:
+  port: 8080

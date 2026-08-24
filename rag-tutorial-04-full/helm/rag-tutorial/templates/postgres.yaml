@@ -1,0 +1,85 @@
+{{- if .Values.postgres.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "rag-tutorial.fullname" . }}-postgres
+  labels:
+    {{- include "rag-tutorial.labels" . | nindent 4 }}
+spec:
+  accessModes: ["ReadWriteOnce"]
+  {{- if .Values.postgres.storageClassName }}
+  storageClassName: {{ .Values.postgres.storageClassName }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.postgres.storage }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "rag-tutorial.fullname" . }}-postgres
+  labels:
+    {{- include "rag-tutorial.labels" . | nindent 4 }}
+    app.kubernetes.io/component: postgres
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: postgres
+  template:
+    metadata:
+      labels:
+        {{- include "rag-tutorial.labels" . | nindent 8 }}
+        app.kubernetes.io/component: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: {{ .Values.postgres.image }}
+          ports:
+            - name: pg
+              containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              value: {{ .Values.postgres.database | quote }}
+            - name: POSTGRES_USER
+              value: {{ .Values.postgres.username | quote }}
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "rag-tutorial.fullname" . }}-backend-secrets
+                  key: POSTGRES_PASSWORD
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", {{ .Values.postgres.username | quote }}, "-d", {{ .Values.postgres.database | quote }}]
+            initialDelaySeconds: 5
+            periodSeconds: 5
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ include "rag-tutorial.fullname" . }}-postgres
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "rag-tutorial.fullname" . }}-postgres
+  labels:
+    {{- include "rag-tutorial.labels" . | nindent 4 }}
+    app.kubernetes.io/component: postgres
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: postgres
+  ports:
+    - name: pg
+      port: 5432
+      targetPort: pg
+{{- end }}

@@ -1,0 +1,10 @@
+target/
+rag-ui/node_modules/
+rag-ui/dist/
+rag-ui/.angular/
+*.log
+.DS_Store
+.idea/
+*.iml
+.vscode/
+.env

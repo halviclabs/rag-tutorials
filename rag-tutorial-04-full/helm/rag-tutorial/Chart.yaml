@@ -1,0 +1,6 @@
+apiVersion: v2
+name: rag-tutorial
+description: RAG tutorial series, Part 4 — Spring Boot backend + Angular frontend, with optional Postgres/pgvector and Ollama
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

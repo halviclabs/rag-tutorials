@@ -1,0 +1,9 @@
+target/
+rag-ui/
+helm/
+*.md
+.git/
+.gitignore
+.idea/
+.vscode/
+docker-compose.yml

@@ -1,0 +1,6 @@
+# Store profile "pgvector" — persistent PostgreSQL + pgvector (see docker-compose.yml)
+spring:
+  datasource:
+    url: ${POSTGRES_URL:jdbc:postgresql://localhost:5432/ragdb}
+    username: ${POSTGRES_USER:rag}
+    password: ${POSTGRES_PASSWORD:rag}

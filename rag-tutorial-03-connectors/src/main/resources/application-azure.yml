@@ -1,0 +1,17 @@
+# Provider profile "azure" — Azure OpenAI (same as Part 1)
+spring:
+  ai:
+    model:
+      chat: azure-openai
+      embedding: azure-openai
+    azure:
+      openai:
+        api-key: ${AZURE_OPENAI_API_KEY}
+        endpoint: ${AZURE_OPENAI_ENDPOINT}
+        chat:
+          options:
+            deployment-name: ${AZURE_OPENAI_CHAT_DEPLOYMENT:gpt-4o}
+            temperature: 0.2
+        embedding:
+          options:
+            deployment-name: ${AZURE_OPENAI_EMBEDDING_DEPLOYMENT:text-embedding-3-small}
