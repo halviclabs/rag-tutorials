@@ -1,5 +1,7 @@
 # RAG Tutorial Series — Java + Spring AI + Angular
 
+🇩🇪 [Deutsche Version](README.de.md)
+
 A four-part, progressively-built tutorial series that teaches **Retrieval-Augmented
 Generation (RAG)** from first principles to a production deployment. Each part is a
 **separate, fully self-contained, independently runnable Maven project** — you can
